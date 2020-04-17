@@ -22,5 +22,14 @@ kotlin {
                 api(project(":ktor-test-dispatcher"))
             }
         }
+
+        // Hack: register the Native interop klibs as outputs of Kotlin source sets:
+        val utilsInterop by creating
+        getByName("posixMain").dependsOn(utilsInterop)
+        apply(from = "$rootDir/gradle/interop-as-source-set-klib.gradle")
+        (project.ext.get("registerInteropAsSourceSetOutput") as groovy.lang.Closure<*>).invoke(
+            linuxX64().compilations["main"].cinterops["utils"],
+            utilsInterop
+        )
     }
 }
