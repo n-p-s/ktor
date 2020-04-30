@@ -4,6 +4,7 @@
 
 package io.ktor.client.tests
 
+import io.ktor.client.features.logging.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.client.tests.utils.*
@@ -21,18 +22,24 @@ class AttributesTest : ClientLoader() {
                     val attr = it.call.request.attributes[attrKey]
 
                     assertEquals("test-data", attr)
+                    println("After")
                 }
             }
+
+            Logging()
         }
 
         test { client ->
+            println("Start")
             val response = client.get<String>("$TEST_SERVER/content/hello") {
+                println("Set attributes")
                 setAttributes {
                     put(attrKey, "test-data")
                 }
             }
 
             assertEquals("hello", response)
+            println("DONE")
         }
     }
 }

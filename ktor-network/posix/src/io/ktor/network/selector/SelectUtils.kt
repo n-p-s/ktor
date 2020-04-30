@@ -115,7 +115,6 @@ internal fun processSelectedEvents(
         }
         if (select_fd_isset(event.descriptor, set.ptr) != 0) {
             completed.add(event)
-            debug("Event completed: ${event.interest}")
             event.continuation.resume(Unit)
             continue
         }

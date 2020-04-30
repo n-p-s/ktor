@@ -41,13 +41,11 @@ internal class TCPSocketNative(
             while (!channel.isClosedForWrite) {
                 tryAwait(1)
                 val buffer = request(1) ?: error("Internal error. Buffer unavailable")
-                debug("Prepared buffer for reading: ${buffer.writeRemaining}")
 
                 val count: Int = buffer.writeDirect {
                     val count = buffer.writeRemaining.convert<size_t>()
                     val result = recv(descriptor, it, count, 0).toInt()
 
-                    debug("Recv finished with $result")
                     if (result == 0) {
                         channel.close()
                     }
@@ -63,12 +61,8 @@ internal class TCPSocketNative(
                     result.convert()
                 }
 
-                debug("Received: $count bytes")
-
                 if (count == 0 && !channel.isClosedForWrite) {
-                    debug("Select $descriptor for READ")
                     selector.select(selectable, SelectInterest.READ)
-                    debug("Selected for READ")
                 }
 
                 written(count)
@@ -77,7 +71,6 @@ internal class TCPSocketNative(
         }
     }.apply {
         invokeOnCompletion {
-            debug("Finish read: $it ")
             shutdown(descriptor, SHUT_RD)
         }
     }
@@ -105,18 +98,13 @@ internal class TCPSocketNative(
                     result.convert()
                 }
 
-                debug("Sent $count bytes.")
-
                 if (buffer.canRead()) {
-                    debug("Select $descriptor for WRITE")
                     selector.select(selectable, SelectInterest.WRITE)
-                    debug("Selected for WRITE")
                 }
             }
         }
     }.apply {
         invokeOnCompletion {
-            debug("Finish write: $it ")
             shutdown(descriptor, SHUT_WR)
         }
     }
